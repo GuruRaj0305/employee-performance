@@ -6,8 +6,6 @@ const createUser = async (req, res) => {
         
     const result = await authService.registerUser(req.body);
 
-    setAuthCookies(res, result.accessToken, result.refreshToken);
-
     return res.status(201).json({
       success: true,
       message: 'User registered successfully',
