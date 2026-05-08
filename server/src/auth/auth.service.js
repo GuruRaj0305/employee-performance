@@ -67,7 +67,6 @@ const registerUser = async (data) => {
     roleIds = [],
   } = data;
   const normalizedEmail = normalizeEmail(email);
-
   const type = 'EMPLOYEE';
 
   if (!name || !normalizedEmail || !password) {
@@ -101,15 +100,9 @@ const registerUser = async (data) => {
   }
 
   const userWithRoles = await findUserWithRoles(user.id);
-  const payload = createTokenPayload(userWithRoles);
-
-  const accessToken = generateAccessToken(payload);
-  const refreshToken = generateRefreshToken(payload);
 
   return {
     user: sanitizeUser(userWithRoles),
-    accessToken,
-    refreshToken,
   };
 };
 
