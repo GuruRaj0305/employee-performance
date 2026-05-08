@@ -1,0 +1,4 @@
+# only used files to the repository.
+
+node_modules/
+.env

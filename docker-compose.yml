@@ -1,0 +1,124 @@
+version: "3.9"
+
+services:
+
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+
+    container_name: react_client
+
+    restart: unless-stopped
+
+    working_dir: /app
+
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+
+    ports:
+      - "5173:5173"
+
+    networks:
+      - app_network
+
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+
+    container_name: node_server
+
+    restart: unless-stopped
+
+    working_dir: /app
+
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+
+    ports:
+      - "5000:${SERVER_PORT}"
+
+    environment:
+      - PORT=${SERVER_PORT:?SERVER_PORT is not set}
+
+    env_file:
+      - .env
+
+    depends_on:
+      - postgres
+      - redis
+
+    networks:
+      - app_network
+
+
+  postgres:
+    image: postgres:16-alpine
+
+    container_name: postgres
+
+    restart: unless-stopped
+
+    ports:
+      - "5432:5432"
+
+    environment:
+      POSTGRES_DB: ${DATABASE_NAME:?DATABASE_NAME is not set}
+      POSTGRES_USER: ${DATABASE_USER:?DATABASE_USER is not set}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:?DATABASE_PASSWORD is not set}
+
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+    networks:
+      - app_network
+
+  redis:
+    image: redis:7-alpine
+
+    container_name: redis_cache
+
+    restart: unless-stopped
+
+    ports:
+      - "6379:6379"
+
+    volumes:
+      - redis_data:/data
+
+    networks:
+      - app_network
+
+
+  gateway:
+    image: nginx:stable-alpine
+
+    container_name: gateway
+
+    restart: unless-stopped
+
+    ports:
+      - "80:80"
+
+    volumes:
+      - ./gateway/nginx.conf:/etc/nginx/nginx.conf
+      - ./gateway/conf.d:/etc/nginx/conf.d
+
+    depends_on:
+      - client
+      - server
+
+    networks:
+      - app_network
+
+networks:
+  app_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  redis_data:
