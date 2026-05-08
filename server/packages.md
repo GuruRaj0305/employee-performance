@@ -13,5 +13,6 @@
 + joi : request parametars and body validation.
 + uuid : To manage long unpredictable ids.
 + nodemon : auto restart server when change (development)
++ cookie-parser : to manage tokens in cookies secure way.
 
 
