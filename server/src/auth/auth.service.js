@@ -112,7 +112,8 @@ const loginUser = async (data) => {
 
 const getProfile = async (userId) => {
   const user = await User.findByPk(userId, {
-    attributes: ['id', 'name', 'email', 'role', 'isActive', 'createdAt', 'updatedAt'],
+    attributes: ['id', 'name', 'email', 'type', 'isActive', 'createdAt', 'updatedAt'],
+    
   });
 
   if (!user) {

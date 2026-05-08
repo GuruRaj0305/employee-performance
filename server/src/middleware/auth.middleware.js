@@ -100,7 +100,20 @@ const authorizeAnyPermission = (...allowedPermissions) => {
   };
 };
 
+const onlyAdmin = () => {
+  return (req, res, next) => {
+    if (req.user?.type !== 'ADMIN') {
+      return res.status(403).json({
+        success: false,
+        message: 'Admin access required',
+      });
+    }
+    next();
+  };
+}
+
 module.exports = {
   userAuthentication,
   authorizeAnyPermission,
+  onlyAdmin,
 };

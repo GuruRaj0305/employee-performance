@@ -1,10 +1,9 @@
 const authService = require('./auth.service');
 const { setAuthCookies, clearAuthCookies } = require('../utils/cookie');
 
-const register = async (req, res) => {
+const createUser = async (req, res) => {
   try {
-    
-    
+        
     const result = await authService.registerUser(req.body);
 
     setAuthCookies(res, result.accessToken, result.refreshToken);
@@ -112,7 +111,7 @@ const logout = async (req, res) => {
 };
 
 module.exports = {
-  register,
+  createUser,
   login,
   profile,
   refreshToken,
