@@ -1,5 +1,5 @@
 const { verifyAccessToken } = require('../utils/auth');
-const { User } = require('../models/index.model');
+const { User, Role, Permission } = require('../models/index.model');
 
 const userAuthentication = async (req, res, next) => {
   try {
@@ -24,7 +24,7 @@ const userAuthentication = async (req, res, next) => {
     }
 
     const user = await User.findByPk(decoded.id, {
-      attributes: ['id', 'name', 'email', 'type', 'isActive'],
+      attributes: ['id', 'name', 'emailId', 'type', 'active'],
       include: [
         {
           model: Role,
@@ -54,7 +54,7 @@ const userAuthentication = async (req, res, next) => {
       });
     }
 
-    if (user.isActive === false) {
+    if (user.active === false) {
       return res.status(403).json({
         success: false,
         message: 'User account is inactive',
@@ -67,9 +67,13 @@ const userAuthentication = async (req, res, next) => {
       ...plainUser,
       roleCodes: plainUser.roles?.map((role) => role.code) || [],
       permissionCodes:
-        plainUser.roles?.flatMap((role) =>
-          role.permissions?.map((permission) => permission.code) || []
-        ) || [],
+        [
+          ...new Set(
+            plainUser.roles?.flatMap((role) =>
+              role.permissions?.map((permission) => permission.code) || []
+            ) || []
+          ),
+        ],
     };
 
     next();
@@ -110,7 +114,7 @@ const onlyAdmin = () => {
     }
     next();
   };
-}
+};
 
 module.exports = {
   userAuthentication,

@@ -37,6 +37,22 @@ const registerSchema = Joi.object({
         'Password must contain uppercase, lowercase, number and special character',
       'any.required': 'Password is required',
     }),
+
+  type: Joi.string()
+    .valid('ADMIN', 'EMPLOYEE')
+    .default('EMPLOYEE')
+    .messages({
+      'any.only': 'User type must be ADMIN or EMPLOYEE',
+    }),
+
+  roleIds: Joi.array()
+    .items(Joi.string().guid({ version: ['uuidv4', 'uuidv5'] }))
+    .unique()
+    .default([])
+    .messages({
+      'string.guid': 'Role id must be a valid UUID',
+      'array.unique': 'Role ids must be unique',
+    }),
 });
 
 const loginSchema = Joi.object({

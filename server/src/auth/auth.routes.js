@@ -4,7 +4,7 @@ const authController = require('./auth.controller');
 
 const validate = require('../middleware/validate.middleware');
 
-const { onlyAdmin } = require('../middleware/auth.middleware');
+const { onlyAdmin, userAuthentication } = require('../middleware/auth.middleware');
 const {
   registerSchema,
   loginSchema,
@@ -18,7 +18,8 @@ const router = express.Router();
 
 router.post(
     '/user/create',
-    onlyAdmin,
+    userAuthentication,
+    onlyAdmin(),
     validate(registerSchema),
     authController.createUser
 );
@@ -31,8 +32,26 @@ router.post(
 
 router.patch(
     '/change-password',
+    userAuthentication,
     validate(changePasswordSchema),
     authController.changePassword
+);
+
+router.get(
+    '/profile',
+    userAuthentication,
+    authController.profile
+);
+
+router.post(
+    '/refresh-token',
+    authController.refreshToken
+);
+
+router.post(
+    '/logout',
+    userAuthentication,
+    authController.logout
 );
 
 module.exports = router;

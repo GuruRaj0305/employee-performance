@@ -1,40 +1,83 @@
-const { User } = require('../models');
-const { hashPassword, comparePassword } = require('../utils/passwd');
+const { User, Role, Permission } = require('../models/index.model');
+const { compare } = require('../utils/passwd');
 const {
   generateAccessToken,
   generateRefreshToken,
   verifyRefreshToken,
-} = require('../utils/jwt');
+} = require('../utils/auth');
+
+const userAttributes = ['id', 'name', 'emailId', 'type', 'active', 'createdAt', 'updatedAt'];
+
+const roleInclude = {
+  model: Role,
+  as: 'roles',
+  attributes: ['id', 'name', 'code', 'description'],
+  through: { attributes: [] },
+  include: [
+    {
+      model: Permission,
+      as: 'permissions',
+      attributes: ['id', 'code', 'name', 'description'],
+      through: { attributes: [] },
+    },
+  ],
+};
+
+const normalizeEmail = (email) => String(email || '').trim().toLowerCase();
 
 const createTokenPayload = (user) => {
+  const plainUser = typeof user.get === 'function' ? user.get({ plain: true }) : user;
+  const roles = plainUser.roles || [];
+
   return {
-    id: user.id,
-    email: user.email,
-    role: user.role,
+    id: plainUser.id,
+    emailId: plainUser.emailId,
+    type: plainUser.type,
+    roleCodes: roles.map((role) => role.code),
   };
 };
 
 const sanitizeUser = (user) => {
+  const plainUser = typeof user.get === 'function' ? user.get({ plain: true }) : user;
+  const roles = plainUser.roles || [];
+
   return {
-    id: user.id,
-    name: user.name,
-    email: user.email,
-    role: user.role,
-    isActive: user.isActive,
+    id: plainUser.id,
+    name: plainUser.name,
+    emailId: plainUser.emailId,
+    type: plainUser.type,
+    active: plainUser.active,
+    roles,
+    roleCodes: roles.map((role) => role.code),
+    permissionCodes: [
+      ...new Set(
+        roles.flatMap((role) =>
+          role.permissions?.map((permission) => permission.code) || []
+        )
+      ),
+    ],
   };
 };
 
 const registerUser = async (data) => {
-  const { name, email, password, role } = data;
+  const {
+    name,
+    email,
+    password,
+    roleIds = [],
+  } = data;
+  const normalizedEmail = normalizeEmail(email);
 
-  if (!name || !email || !password) {
+  const type = 'EMPLOYEE';
+
+  if (!name || !normalizedEmail || !password) {
     const error = new Error('Name, email and password are required');
     error.statusCode = 400;
     throw error;
   }
 
   const existingUser = await User.findOne({
-    where: { email },
+    where: { emailId: normalizedEmail },
   });
 
   if (existingUser) {
@@ -43,23 +86,28 @@ const registerUser = async (data) => {
     throw error;
   }
 
-  const hashedPassword = await hashPassword(password);
+  const roles = await findRoles(roleIds);
 
   const user = await User.create({
     name,
-    email,
-    password: hashedPassword,
-    role: role || 'employee',
-    isActive: true,
+    emailId: normalizedEmail,
+    password,
+    type,
+    active: true,
   });
 
-  const payload = createTokenPayload(user);
+  if (roles.length > 0) {
+    await user.setRoles(roles);
+  }
+
+  const userWithRoles = await findUserWithRoles(user.id);
+  const payload = createTokenPayload(userWithRoles);
 
   const accessToken = generateAccessToken(payload);
   const refreshToken = generateRefreshToken(payload);
 
   return {
-    user: sanitizeUser(user),
+    user: sanitizeUser(userWithRoles),
     accessToken,
     refreshToken,
   };
@@ -74,9 +122,8 @@ const loginUser = async (data) => {
     throw error;
   }
 
-  const user = await User.findOne({
-    where: { email },
-  });
+  const normalizedEmail = normalizeEmail(email);
+  const user = await User.findOne({ where: { emailId: normalizedEmail } });
 
   if (!user) {
     const error = new Error('Invalid email or password');
@@ -84,13 +131,13 @@ const loginUser = async (data) => {
     throw error;
   }
 
-  if (user.isActive === false) {
+  if (user.active === false) {
     const error = new Error('User account is inactive');
     error.statusCode = 403;
     throw error;
   }
 
-  const isPasswordValid = await comparePassword(password, user.password);
+  const isPasswordValid = await compare(password, user.password);
 
   if (!isPasswordValid) {
     const error = new Error('Invalid email or password');
@@ -98,23 +145,21 @@ const loginUser = async (data) => {
     throw error;
   }
 
-  const payload = createTokenPayload(user);
+  const userWithRoles = await findUserWithRoles(user.id);
+  const payload = createTokenPayload(userWithRoles);
 
   const accessToken = generateAccessToken(payload);
   const refreshToken = generateRefreshToken(payload);
 
   return {
-    user: sanitizeUser(user),
+    user: sanitizeUser(userWithRoles),
     accessToken,
     refreshToken,
   };
 };
 
 const getProfile = async (userId) => {
-  const user = await User.findByPk(userId, {
-    attributes: ['id', 'name', 'email', 'type', 'isActive', 'createdAt', 'updatedAt'],
-    
-  });
+  const user = await findUserWithRoles(userId);
 
   if (!user) {
     const error = new Error('User not found');
@@ -122,7 +167,7 @@ const getProfile = async (userId) => {
     throw error;
   }
 
-  return user;
+  return sanitizeUser(user);
 };
 
 const refreshAccessToken = async (refreshToken) => {
@@ -142,7 +187,7 @@ const refreshAccessToken = async (refreshToken) => {
     throw error;
   }
 
-  const user = await User.findByPk(decoded.id);
+  const user = await findUserWithRoles(decoded.id);
 
   if (!user) {
     const error = new Error('User not found');
@@ -150,7 +195,7 @@ const refreshAccessToken = async (refreshToken) => {
     throw error;
   }
 
-  if (user.isActive === false) {
+  if (user.active === false) {
     const error = new Error('User account is inactive');
     error.statusCode = 403;
     throw error;
@@ -184,7 +229,7 @@ const changePassword = async (userId, data) => {
     throw error;
   }
 
-  const isPasswordValid = await comparePassword(oldPassword, user.password);
+  const isPasswordValid = await compare(oldPassword, user.password);
 
   if (!isPasswordValid) {
     const error = new Error('Old password is incorrect');
@@ -192,15 +237,44 @@ const changePassword = async (userId, data) => {
     throw error;
   }
 
-  const hashedPassword = await hashPassword(newPassword);
-
   await user.update({
-    password: hashedPassword,
+    password: newPassword,
   });
 
   return {
     message: 'Password changed successfully',
   };
+};
+
+const findUserWithRoles = (userId) => {
+  return User.findByPk(userId, {
+    attributes: userAttributes,
+    include: [roleInclude],
+  });
+};
+
+const findRoles = async (roleIds = []) => {
+  const uniqueRoleIds = [...new Set(roleIds)];
+
+  if (uniqueRoleIds.length === 0) {
+    return [];
+  }
+
+  const roles = await Role.findAll({
+    where: { id: uniqueRoleIds },
+  });
+
+  const foundRoleIds = new Set(roles.map((roleItem) => roleItem.id));
+  const missingRoleIds = uniqueRoleIds.filter((roleId) => !foundRoleIds.has(roleId));
+
+  if (missingRoleIds.length > 0) {
+    const error = new Error('One or more roles were not found');
+    error.statusCode = 400;
+    error.details = { roleIds: missingRoleIds };
+    throw error;
+  }
+
+  return roles;
 };
 
 module.exports = {
