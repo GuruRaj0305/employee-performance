@@ -53,20 +53,6 @@ module.exports = (sequelize, DataTypes) => {
   });
 
   User.associate = (models) => {
-    User.belongsToMany(models.Role, {
-      through: models.UserRole,
-      foreignKey: 'userId',
-      otherKey: 'roleId',
-      as: 'roles',
-    });
-
-    User.belongsToMany(models.Department, {
-      through: models.DepartmentUser,
-      foreignKey: 'userId',
-      otherKey: 'departmentId',
-      as: 'departments',
-    });
-
     User.hasMany(models.ReviewOpenUser, {
       foreignKey: 'userId',
       as: 'openedReviewUsers',

@@ -25,11 +25,6 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
       field: 'reviewee_id',
     },
-    performanceFactorId: {
-      type: DataTypes.UUID,
-      allowNull: true,
-      field: 'performance_factor_id',
-    },
     title: {
       type: DataTypes.STRING(150),
       allowNull: false,
@@ -51,7 +46,6 @@ module.exports = (sequelize, DataTypes) => {
       { fields: ['review_session_id'] },
       { fields: ['reviewer_id'] },
       { fields: ['reviewee_id'] },
-      { fields: ['performance_factor_id'] },
     ],
   });
 
@@ -76,10 +70,6 @@ module.exports = (sequelize, DataTypes) => {
       as: 'reviewee',
     });
 
-    OthersReview.belongsTo(models.PerformanceFactor, {
-      foreignKey: 'performanceFactorId',
-      as: 'performanceFactor',
-    });
   };
 
   return OthersReview;

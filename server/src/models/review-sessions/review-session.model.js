@@ -5,10 +5,15 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
-    departmentId: {
+    performanceCycleId: {
+      type: DataTypes.UUID,
+      allowNull: false,
+      field: 'performance_cycle_id',
+    },
+    targetUserId: {
       type: DataTypes.UUID,
       allowNull: true,
-      field: 'department_id',
+      field: 'target_user_id',
     },
     name: {
       type: DataTypes.STRING(120),
@@ -17,16 +22,6 @@ module.exports = (sequelize, DataTypes) => {
     description: {
       type: DataTypes.STRING(255),
       allowNull: true,
-    },
-    fromDate: {
-      type: DataTypes.DATEONLY,
-      allowNull: false,
-      field: 'from_date',
-    },
-    toDate: {
-      type: DataTypes.DATEONLY,
-      allowNull: false,
-      field: 'to_date',
     },
     active: {
       type: DataTypes.BOOLEAN,
@@ -40,16 +35,14 @@ module.exports = (sequelize, DataTypes) => {
   });
 
   ReviewSession.associate = (models) => {
-    ReviewSession.belongsTo(models.Department, {
-      foreignKey: 'departmentId',
-      as: 'department',
+    ReviewSession.belongsTo(models.PerformanceCycle, {
+      foreignKey: 'performanceCycleId',
+      as: 'performanceCycle',
     });
 
-    ReviewSession.belongsToMany(models.PerformanceFactor, {
-      through: models.ReviewSessionFactor,
-      foreignKey: 'reviewSessionId',
-      otherKey: 'performanceFactorId',
-      as: 'performanceFactors',
+    ReviewSession.belongsTo(models.User, {
+      foreignKey: 'targetUserId',
+      as: 'targetUser',
     });
 
     ReviewSession.hasMany(models.OthersReview, {
@@ -57,9 +50,9 @@ module.exports = (sequelize, DataTypes) => {
       as: 'othersReviews',
     });
 
-    ReviewSession.hasMany(models.ReviewOpenDept, {
+    ReviewSession.hasMany(models.ReviewOpenUser, {
       foreignKey: 'reviewSessionId',
-      as: 'reviewOpenDepts',
+      as: 'reviewOpenUsers',
     });
   };
 

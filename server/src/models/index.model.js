@@ -21,56 +21,13 @@ db.User = require('./users/user.model')(
   Sequelize.DataTypes
 );
 
-db.Role = require('./roles/role.model')(
-  sequelize,
-  Sequelize.DataTypes
-);
-
-db.UserRole = require('./roles/user-role.model')(
-  sequelize,
-  Sequelize.DataTypes
-);
-
-db.Permission = require('./permissions/permission.model')(
-  sequelize,
-  Sequelize.DataTypes
-);
-
-db.RolePermission = require('./permissions/role-permission.model')(
-  sequelize,
-  Sequelize.DataTypes
-);
-
-// Department related models
-db.Department = require('./departments/department.model')(
-  sequelize,
-  Sequelize.DataTypes
-);
-
-db.DepartmentUser = require('./departments/department-user.model')(
-  sequelize,
-  Sequelize.DataTypes
-);
-
-// Performance factor models
-db.PerformanceFactor = require('./performance-factors/performance-factor.model')(
+db.PerformanceCycle = require('./performance-cycles/performance-cycle.model')(
   sequelize,
   Sequelize.DataTypes
 );
 
 // Review session models
 db.ReviewSession = require('./review-sessions/review-session.model')(
-  sequelize,
-  Sequelize.DataTypes
-);
-
-db.ReviewSessionFactor = require('./review-sessions/review-session-factor.model')(
-  sequelize,
-  Sequelize.DataTypes
-);
-
-// Review opening models
-db.ReviewOpenDept = require('./review-open-depts/review-open-dept.model')(
   sequelize,
   Sequelize.DataTypes
 );

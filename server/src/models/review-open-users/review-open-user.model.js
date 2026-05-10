@@ -5,10 +5,10 @@ module.exports = (sequelize, DataTypes) => {
       defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
     },
-    reviewOpenDeptId: {
+    reviewSessionId: {
       type: DataTypes.UUID,
       allowNull: false,
-      field: 'review_open_dept_id',
+      field: 'review_session_id',
     },
     userId: {
       type: DataTypes.UUID,
@@ -27,14 +27,14 @@ module.exports = (sequelize, DataTypes) => {
     timestamps: true,
     underscored: true,
     indexes: [
-      { unique: true, fields: ['review_open_dept_id', 'user_id', 'user_ref_id'] },
+      { unique: true, fields: ['review_session_id', 'user_id', 'user_ref_id'] },
     ],
   });
 
   ReviewOpenUser.associate = (models) => {
-    ReviewOpenUser.belongsTo(models.ReviewOpenDept, {
-      foreignKey: 'reviewOpenDeptId',
-      as: 'reviewOpenDept',
+    ReviewOpenUser.belongsTo(models.ReviewSession, {
+      foreignKey: 'reviewSessionId',
+      as: 'reviewSession',
     });
 
     ReviewOpenUser.belongsTo(models.User, {

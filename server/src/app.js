@@ -2,11 +2,20 @@ const express = require("express");
 const { userAuthentication } = require('./middleware/auth.middleware');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
-const { CORS_OPTIONS } = require('../config/config');
+const { ALLOWED_CORS_ORIGINS } = require("../config/config");
 
 const app = express();
 
-app.use(cors(CORS_OPTIONS));
+app.use(
+  cors({
+    origin: ALLOWED_CORS_ORIGINS,
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  })
+);
+
+
 app.use(express.json());
 app.use(cookieParser());
 
@@ -25,10 +34,6 @@ app.use((req, res, next) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
   next();
 });
-
-app.use("/api/auth", require("./auth/auth.routes"));
-
-app.use(userAuthentication);
 
 
 

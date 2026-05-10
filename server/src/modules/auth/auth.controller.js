@@ -1,25 +1,5 @@
 const authService = require('./auth.service');
-const { setAuthCookies, clearAuthCookies } = require('../utils/cookie');
-
-const createUser = async (req, res) => {
-  try {
-        
-    const result = await authService.registerUser(req.body);
-
-    return res.status(201).json({
-      success: true,
-      message: 'User registered successfully',
-      data: {
-        user: result.user,
-      },
-    });
-  } catch (error) {
-    return res.status(error.statusCode || 500).json({
-      success: false,
-      message: error.message || 'Something went wrong',
-    });
-  }
-};
+const { setAuthCookies, clearAuthCookies } = require('../../utils/cookie');
 
 const login = async (req, res) => {
   try {
@@ -109,7 +89,6 @@ const logout = async (req, res) => {
 };
 
 module.exports = {
-  createUser,
   login,
   profile,
   refreshToken,

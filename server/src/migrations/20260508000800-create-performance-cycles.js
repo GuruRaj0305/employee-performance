@@ -3,12 +3,8 @@
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.sequelize.transaction(async (transaction) => {
-      await queryInterface.sequelize.query('CREATE EXTENSION IF NOT EXISTS "pgcrypto";', {
-        transaction,
-      });
-
       await queryInterface.createTable(
-        'users',
+        'performance_cycles',
         {
           id: {
             type: Sequelize.UUID,
@@ -20,18 +16,9 @@ module.exports = {
             type: Sequelize.STRING(120),
             allowNull: false,
           },
-          email_id: {
-            type: Sequelize.STRING(150),
-            allowNull: false,
-          },
-          password: {
+          description: {
             type: Sequelize.STRING(255),
-            allowNull: false,
-          },
-          type: {
-            type: Sequelize.ENUM('ADMIN', 'EMPLOYEE'),
-            allowNull: false,
-            defaultValue: 'EMPLOYEE',
+            allowNull: true,
           },
           active: {
             type: Sequelize.BOOLEAN,
@@ -52,20 +39,20 @@ module.exports = {
         { transaction }
       );
 
-      await queryInterface.addIndex('users', ['email_id'], {
+      await queryInterface.addIndex('performance_cycles', ['name'], {
         unique: true,
-        name: 'users_email_id_unique',
+        name: 'performance_cycles_name_unique',
+        transaction,
+      });
+
+      await queryInterface.addIndex('performance_cycles', ['active'], {
+        name: 'performance_cycles_active_idx',
         transaction,
       });
     });
   },
 
   async down(queryInterface) {
-    await queryInterface.sequelize.transaction(async (transaction) => {
-      await queryInterface.dropTable('users', { transaction });
-      await queryInterface.sequelize.query('DROP TYPE IF EXISTS "enum_users_type";', {
-        transaction,
-      });
-    });
+    await queryInterface.dropTable('performance_cycles');
   },
 };

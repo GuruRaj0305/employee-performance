@@ -1,45 +1,27 @@
-const { User, Role, Permission } = require('../models/index.model');
-const { compare } = require('../utils/passwd');
+const { User } = require('../../models/index.model');
+const { compare } = require('../../utils/passwd');
 const {
   generateAccessToken,
   generateRefreshToken,
   verifyRefreshToken,
-} = require('../utils/auth');
+} = require('../../utils/auth');
 
 const userAttributes = ['id', 'name', 'emailId', 'type', 'active', 'createdAt', 'updatedAt'];
-
-const roleInclude = {
-  model: Role,
-  as: 'roles',
-  attributes: ['id', 'name', 'code', 'description'],
-  through: { attributes: [] },
-  include: [
-    {
-      model: Permission,
-      as: 'permissions',
-      attributes: ['id', 'code', 'name', 'description'],
-      through: { attributes: [] },
-    },
-  ],
-};
 
 const normalizeEmail = (email) => String(email || '').trim().toLowerCase();
 
 const createTokenPayload = (user) => {
   const plainUser = typeof user.get === 'function' ? user.get({ plain: true }) : user;
-  const roles = plainUser.roles || [];
 
   return {
     id: plainUser.id,
     emailId: plainUser.emailId,
     type: plainUser.type,
-    roleCodes: roles.map((role) => role.code),
   };
 };
 
 const sanitizeUser = (user) => {
   const plainUser = typeof user.get === 'function' ? user.get({ plain: true }) : user;
-  const roles = plainUser.roles || [];
 
   return {
     id: plainUser.id,
@@ -47,15 +29,6 @@ const sanitizeUser = (user) => {
     emailId: plainUser.emailId,
     type: plainUser.type,
     active: plainUser.active,
-    roles,
-    roleCodes: roles.map((role) => role.code),
-    permissionCodes: [
-      ...new Set(
-        roles.flatMap((role) =>
-          role.permissions?.map((permission) => permission.code) || []
-        )
-      ),
-    ],
   };
 };
 
@@ -64,7 +37,6 @@ const registerUser = async (data) => {
     name,
     email,
     password,
-    roleIds = [],
   } = data;
   const normalizedEmail = normalizeEmail(email);
   const type = 'EMPLOYEE';
@@ -85,8 +57,6 @@ const registerUser = async (data) => {
     throw error;
   }
 
-  const roles = await findRoles(roleIds);
-
   const user = await User.create({
     name,
     emailId: normalizedEmail,
@@ -95,14 +65,10 @@ const registerUser = async (data) => {
     active: true,
   });
 
-  if (roles.length > 0) {
-    await user.setRoles(roles);
-  }
-
-  const userWithRoles = await findUserWithRoles(user.id);
+  const createdUser = await findUser(user.id);
 
   return {
-    user: sanitizeUser(userWithRoles),
+    user: sanitizeUser(createdUser),
   };
 };
 
@@ -124,12 +90,6 @@ const loginUser = async (data) => {
     throw error;
   }
 
-  if (user.active === false) {
-    const error = new Error('User account is inactive');
-    error.statusCode = 403;
-    throw error;
-  }
-
   const isPasswordValid = await compare(password, user.password);
 
   if (!isPasswordValid) {
@@ -138,21 +98,27 @@ const loginUser = async (data) => {
     throw error;
   }
 
-  const userWithRoles = await findUserWithRoles(user.id);
-  const payload = createTokenPayload(userWithRoles);
+  if (user.active === false) {
+    const error = new Error('User account is inactive');
+    error.statusCode = 403;
+    throw error;
+  }
+
+  const userWithProfile = await findUser(user.id);
+  const payload = createTokenPayload(userWithProfile);
 
   const accessToken = generateAccessToken(payload);
   const refreshToken = generateRefreshToken(payload);
 
   return {
-    user: sanitizeUser(userWithRoles),
+    user: sanitizeUser(userWithProfile),
     accessToken,
     refreshToken,
   };
 };
 
 const getProfile = async (userId) => {
-  const user = await findUserWithRoles(userId);
+  const user = await findUser(userId);
 
   if (!user) {
     const error = new Error('User not found');
@@ -180,7 +146,7 @@ const refreshAccessToken = async (refreshToken) => {
     throw error;
   }
 
-  const user = await findUserWithRoles(decoded.id);
+  const user = await findUser(decoded.id);
 
   if (!user) {
     const error = new Error('User not found');
@@ -239,35 +205,10 @@ const changePassword = async (userId, data) => {
   };
 };
 
-const findUserWithRoles = (userId) => {
+const findUser = (userId) => {
   return User.findByPk(userId, {
     attributes: userAttributes,
-    include: [roleInclude],
   });
-};
-
-const findRoles = async (roleIds = []) => {
-  const uniqueRoleIds = [...new Set(roleIds)];
-
-  if (uniqueRoleIds.length === 0) {
-    return [];
-  }
-
-  const roles = await Role.findAll({
-    where: { id: uniqueRoleIds },
-  });
-
-  const foundRoleIds = new Set(roles.map((roleItem) => roleItem.id));
-  const missingRoleIds = uniqueRoleIds.filter((roleId) => !foundRoleIds.has(roleId));
-
-  if (missingRoleIds.length > 0) {
-    const error = new Error('One or more roles were not found');
-    error.statusCode = 400;
-    error.details = { roleIds: missingRoleIds };
-    throw error;
-  }
-
-  return roles;
 };
 
 module.exports = {

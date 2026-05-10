@@ -1,5 +1,5 @@
 const { verifyAccessToken } = require('../utils/auth');
-const { User, Role, Permission } = require('../models/index.model');
+const { User } = require('../models/index.model');
 
 const userAuthentication = async (req, res, next) => {
   try {
@@ -25,26 +25,6 @@ const userAuthentication = async (req, res, next) => {
 
     const user = await User.findByPk(decoded.id, {
       attributes: ['id', 'name', 'emailId', 'type', 'active'],
-      include: [
-        {
-          model: Role,
-          as: 'roles',
-          attributes: ['id', 'name', 'code', 'description'],
-          through: {
-            attributes: [],
-          },
-          include: [
-            {
-              model: Permission,
-              as: 'permissions',
-              attributes: ['id', 'code', 'name', 'description'],
-              through: {
-                attributes: [],
-              },
-            },
-          ],
-        },
-      ],
     });
 
     if (!user) {
@@ -61,20 +41,7 @@ const userAuthentication = async (req, res, next) => {
       });
     }
 
-    const plainUser = user.get({ plain: true });
-
-    req.user = {
-      ...plainUser,
-      roleCodes: plainUser.roles?.map((role) => role.code) || [],
-      permissionCodes:
-        [
-          ...new Set(
-            plainUser.roles?.flatMap((role) =>
-              role.permissions?.map((permission) => permission.code) || []
-            ) || []
-          ),
-        ],
-    };
+    req.user = user.get({ plain: true });
 
     next();
   } catch (error) {
@@ -83,25 +50,6 @@ const userAuthentication = async (req, res, next) => {
       message: 'Authentication failed',
     });
   }
-};
-
-const authorizeAnyPermission = (...allowedPermissions) => {
-  return (req, res, next) => {
-    const userPermissions = req.user?.permissionCodes || [];
-
-    const hasPermission = allowedPermissions.some((permission) =>
-      userPermissions.includes(permission)
-    );
-
-    if (!hasPermission) {
-      return res.status(403).json({
-        success: false,
-        message: 'Permission denied',
-      });
-    }
-
-    next();
-  };
 };
 
 const onlyAdmin = () => {
@@ -118,6 +66,5 @@ const onlyAdmin = () => {
 
 module.exports = {
   userAuthentication,
-  authorizeAnyPermission,
   onlyAdmin,
 };
