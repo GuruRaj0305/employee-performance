@@ -25,13 +25,15 @@ router.use((req, res, next) => {
 
 router.use('/auth', require('./modules/auth/auth.routes'));
 
+// swagger docs route
+router.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
 router.use(userAuthentication);
 
 router.use('/employees', require('./modules/employees/employee.routes'));
 router.use('/reviews', require('./modules/reviews/review.routes'));
 
-// swagger docs route
-router.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
 
 
 module.exports = router;

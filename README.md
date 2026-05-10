@@ -6,6 +6,7 @@
 
 - Docker
 - Docker Compose
+- node / npm (for local migration)
 
 ## Steps
 
@@ -41,8 +42,11 @@
 
     
 5. Run database migrations
+    > here in /server/.env set DATABASE_HOST=localhost
 
     ```bash
+    npm install
+
     npm run migrate
     ```
 
@@ -71,7 +75,7 @@
 ### Deployed Application
 
 
-> url : http
+> url : http://43.204.115.230
 
 
 
