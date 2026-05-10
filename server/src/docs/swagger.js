@@ -1,7 +1,7 @@
 const swaggerJSDoc = require("swagger-jsdoc");
 const { SERVER_PORT } = require("../../config/config");
 
-const serverUrl = `http://localhost:${SERVER_PORT}/api/api/v2`;
+const serverUrl = `http://localhost:${SERVER_PORT}/api`;
 
 const options = {
   definition: {

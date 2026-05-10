@@ -1,6 +1,9 @@
 const express = require("express");
 const { userAuthentication } = require("./middleware/auth.middleware");
 
+const swaggerUi = require("swagger-ui-express");
+const swaggerSpec = require("./docs/swagger");
+
 const router = express.Router();
 
 
@@ -26,6 +29,9 @@ router.use(userAuthentication);
 
 router.use('/employees', require('./modules/employees/employee.routes'));
 router.use('/reviews', require('./modules/reviews/review.routes'));
+
+// swagger docs route
+router.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 
 module.exports = router;
