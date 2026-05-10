@@ -1,4 +1,4 @@
-version: "3.9"
+
 
 services:
 
@@ -12,10 +12,6 @@ services:
     restart: unless-stopped
 
     working_dir: /app
-
-    volumes:
-      - ./client:/app
-      - /app/node_modules
 
     ports:
       - "5173:5173"
@@ -34,22 +30,27 @@ services:
 
     working_dir: /app
 
-    volumes:
-      - ./server:/app
-      - /app/node_modules
-
     ports:
       - "5000:${SERVER_PORT}"
 
     environment:
       - PORT=${SERVER_PORT:?SERVER_PORT is not set}
+      - SALT_ROUNDS=${SALT_ROUNDS:?SALT_ROUNDS is not set}
+      - JWT_SECRET=${JWT_SECRET:?JWT_SECRET is not set}
+      - JWT_EXPIRES=${JWT_EXPIRES:?JWT_EXPIRES is not set}
+      - REFRESH_TOKEN_EXPIRES=${REFRESH_TOKEN_EXPIRES:?REFRESH_TOKEN_EXPIRES is not set}
+      - DATABASE_NAME=${DATABASE_NAME:?DATABASE_NAME is not set}
+      - DATABASE_USER=${DATABASE_USER:?DATABASE_USER is not set}
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD:?DATABASE_PASSWORD is not set}
+      - DATABASE_PASSWORD=${DATABASE_PASSWORD:?DATABASE_PASSWORD is not set}
+      - DATABASE_HOST=${DATABASE_HOST:?DATABASE_HOST is not set}
+      - DATABASE_PORT=${DATABASE_PORT:?DATABASE_PORT is not set}
 
     env_file:
       - .env
 
     depends_on:
       - postgres
-      - redis
 
     networks:
       - app_network
@@ -73,22 +74,6 @@ services:
 
     volumes:
       - postgres_data:/var/lib/postgresql/data
-
-    networks:
-      - app_network
-
-  redis:
-    image: redis:7-alpine
-
-    container_name: redis_cache
-
-    restart: unless-stopped
-
-    ports:
-      - "6379:6379"
-
-    volumes:
-      - redis_data:/data
 
     networks:
       - app_network
@@ -121,4 +106,3 @@ networks:
 
 volumes:
   postgres_data:
-  redis_data:

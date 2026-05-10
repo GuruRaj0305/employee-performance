@@ -8,6 +8,17 @@ const COOKIE_OPTIONS = {
   path: "/",
 };
 
+const DATABASE = {
+    username: process.env.DATABASE_USER,
+    password: process.env.DATABASE_PASSWORD,
+    database: process.env.DATABASE_NAME,
+    host: process.env.DATABASE_HOST,
+    port: process.env.DATABASE_PORT,
+    dialect: 'postgres',
+    logging: false,
+    timezone: '+05:30',
+};
+
 
 const ACCESS_TOKEN_COOKIE_OPTIONS = {
   ...COOKIE_OPTIONS,
