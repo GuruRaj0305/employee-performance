@@ -75,7 +75,7 @@
 ### Deployed Application (Not production grade, deployed in aws spot instance with minimal setup and using docker compose)
 
 
-> url : http://43.204.115.230
+> url : `http://43.204.115.230`
 
 
 
