@@ -19,15 +19,20 @@ const DATABASE = {
     timezone: '+05:30',
 };
 
+const ACCESS_TOKEN_EXPIRES_IN = Number(process.env.JWT_EXPIRES);
+const REFRESH_TOKEN_EXPIRES_IN = Number(process.env.JWT_REFRESH_EXPIRES_IN) || ACCESS_TOKEN_EXPIRES_IN;
+const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || JWT_SECRET;
+
 
 const ACCESS_TOKEN_COOKIE_OPTIONS = {
   ...COOKIE_OPTIONS,
-  maxAge: Number(process.env.JWT_EXPIRES) * 1000, // Convert seconds to milliseconds
+  maxAge: ACCESS_TOKEN_EXPIRES_IN * 1000, // Convert seconds to milliseconds
 };
 
 const REFRESH_TOKEN_COOKIE_OPTIONS = {
   ...COOKIE_OPTIONS,
-  maxAge: Number(process.env.REFRESH_TOKEN_EXPIRES) * 1000, // Convert seconds to milliseconds
+  maxAge: REFRESH_TOKEN_EXPIRES_IN * 1000, // Convert seconds to milliseconds
 };
 
 const CLEAR_AUTH_COOKIE_OPTIONS = COOKIE_OPTIONS;
@@ -38,6 +43,16 @@ const ALLOWED_CORS_ORIGINS = [
 
 const SERVER_PORT = process.env.PORT || 5000;
 
+const JWT = {
+    JWT_SECRET,
+    JWT_REFRESH_SECRET, 
+    JWT_EXPIRES_IN : ACCESS_TOKEN_EXPIRES_IN,
+    JWT_REFRESH_EXPIRES_IN : REFRESH_TOKEN_EXPIRES_IN
+
+  }
+
+console.log(DATABASE);
+
 module.exports = {
   development_db_config: DATABASE,
   test_db_config: DATABASE,
@@ -47,4 +62,5 @@ module.exports = {
   CLEAR_AUTH_COOKIE_OPTIONS,
   ALLOWED_CORS_ORIGINS,
   SERVER_PORT,
+  JWT
 };

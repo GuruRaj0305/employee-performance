@@ -38,19 +38,20 @@ services:
       - SALT_ROUNDS=${SALT_ROUNDS:?SALT_ROUNDS is not set}
       - JWT_SECRET=${JWT_SECRET:?JWT_SECRET is not set}
       - JWT_EXPIRES=${JWT_EXPIRES:?JWT_EXPIRES is not set}
-      - REFRESH_TOKEN_EXPIRES=${REFRESH_TOKEN_EXPIRES:?REFRESH_TOKEN_EXPIRES is not set}
+      - JWT_REFRESH_EXPIRES_IN=${JWT_REFRESH_EXPIRES_IN:?JWT_REFRESH_EXPIRES_IN is not set}
       - DATABASE_NAME=${DATABASE_NAME:?DATABASE_NAME is not set}
       - DATABASE_USER=${DATABASE_USER:?DATABASE_USER is not set}
       - DATABASE_PASSWORD=${DATABASE_PASSWORD:?DATABASE_PASSWORD is not set}
       - DATABASE_PASSWORD=${DATABASE_PASSWORD:?DATABASE_PASSWORD is not set}
-      - DATABASE_HOST=${DATABASE_HOST:?DATABASE_HOST is not set}
+      - DATABASE_HOST=postgres
       - DATABASE_PORT=${DATABASE_PORT:?DATABASE_PORT is not set}
 
     env_file:
       - .env
 
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
 
     networks:
       - app_network
@@ -71,6 +72,16 @@ services:
       POSTGRES_USER: ${DATABASE_USER:?DATABASE_USER is not set}
       POSTGRES_PASSWORD: ${DATABASE_PASSWORD:?DATABASE_PASSWORD is not set}
 
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${DATABASE_USER} -d ${DATABASE_NAME}"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
     volumes:
       - postgres_data:/var/lib/postgresql/data

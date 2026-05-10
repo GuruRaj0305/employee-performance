@@ -2,6 +2,8 @@ require("dotenv").config();
 
 const jwt = require("jsonwebtoken");
 
+const {JWT_SECRET,  JWT_REFRESH_SECRET,   JWT_EXPIRES_IN, JWT_REFRESH_EXPIRES_IN } = require('../../config/config').JWT;
+
 const getEnvValue = (key, fallbackValue = "") => {
   return String(process.env[key] || fallbackValue)
     .split("#")[0]
@@ -18,10 +20,6 @@ const getJwtExpiresIn = (key, fallbackValue) => {
   return value;
 };
 
-const JWT_SECRET = process.env.JWT_SECRET;
-const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || JWT_SECRET;
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES;
-const JWT_REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || JWT_EXPIRES_IN;
 
 // Ensure Secrets are set in env
 if (!JWT_SECRET) {
