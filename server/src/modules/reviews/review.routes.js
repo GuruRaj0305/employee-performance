@@ -6,8 +6,6 @@ const { assignmentSchema, feedbackSchema, performanceCycleSchema, reviewSessionS
 
 const router = express.Router();
 
-router.use(userAuthentication);
-
 /**
  * @swagger
  * tags:

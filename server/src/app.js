@@ -20,18 +20,8 @@ app.use(cookieParser());
 
 app.use(express.urlencoded({ extended: true }));
 
-// Health check endpoint, also containes in gateway health check, but this is for direct access to server health check
-app.get("/_healthz", (req, res) => {
-  console.log("Health check endpoint hit");
-  return res.status(200).json({
-    success: true,
-    message: "Server is running successfully",
-  });
-});
 
-app.use((req, res, next) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
-  next();
-});
+app.use('/api', require('./routes'));
+
 
 module.exports = app;

@@ -6,7 +6,7 @@ const { employeeSchema, updateEmployeeSchema } = require("./employee.validation"
 
 const router = express.Router();
 
-router.use(userAuthentication, onlyAdmin());
+router.use(onlyAdmin());
 
 /**
  * @swagger
