@@ -1,19 +1,19 @@
-'use strict';
+"use strict";
 
-const { v4: uuidv4 } = require('uuid');
-const { hash } = require('../utils/passwd');
+const { v4: uuidv4 } = require("uuid");
+const { hash } = require("../utils/passwd");
 
 module.exports = {
   async up(queryInterface) {
-    const password = await hash('admin123'); // Hash the password using the utility function
+    const password = await hash("admin123"); // Hash the password using the utility function
 
-    await queryInterface.bulkInsert('users', [
+    await queryInterface.bulkInsert("users", [
       {
         id: uuidv4(),
-        name: 'Admin',
-        email_id: 'admin@gmail.com',
+        name: "Admin",
+        email_id: "admin@gmail.com",
         password,
-        type: 'ADMIN',
+        type: "ADMIN",
         active: true,
         created_at: new Date(),
         updated_at: new Date(),
@@ -22,8 +22,8 @@ module.exports = {
   },
 
   async down(queryInterface) {
-    await queryInterface.bulkDelete('users', {
-      email_id: 'admin@gmail.com',
+    await queryInterface.bulkDelete("users", {
+      email_id: "admin@gmail.com",
     });
   },
 };

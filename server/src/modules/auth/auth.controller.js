@@ -1,5 +1,5 @@
-const authService = require('./auth.service');
-const { setAuthCookies, clearAuthCookies } = require('../../utils/cookie');
+const authService = require("./auth.service");
+const { setAuthCookies, clearAuthCookies } = require("../../utils/cookie");
 
 const login = async (req, res) => {
   try {
@@ -9,7 +9,7 @@ const login = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: 'Login successful',
+      message: "Login successful",
       data: {
         user: result.user,
       },
@@ -17,7 +17,7 @@ const login = async (req, res) => {
   } catch (error) {
     return res.status(error.statusCode || 500).json({
       success: false,
-      message: error.message || 'Something went wrong',
+      message: error.message || "Something went wrong",
     });
   }
 };
@@ -28,13 +28,13 @@ const profile = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: 'Profile fetched successfully',
+      message: "Profile fetched successfully",
       data: result,
     });
   } catch (error) {
     return res.status(error.statusCode || 500).json({
       success: false,
-      message: error.message || 'Something went wrong',
+      message: error.message || "Something went wrong",
     });
   }
 };
@@ -49,14 +49,14 @@ const refreshToken = async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message: 'Token refreshed successfully',
+      message: "Token refreshed successfully",
     });
   } catch (error) {
     clearAuthCookies(res);
 
     return res.status(error.statusCode || 500).json({
       success: false,
-      message: error.message || 'Something went wrong',
+      message: error.message || "Something went wrong",
     });
   }
 };
@@ -74,7 +74,7 @@ const changePassword = async (req, res) => {
   } catch (error) {
     return res.status(error.statusCode || 500).json({
       success: false,
-      message: error.message || 'Something went wrong',
+      message: error.message || "Something went wrong",
     });
   }
 };
@@ -84,7 +84,7 @@ const logout = async (req, res) => {
 
   return res.status(200).json({
     success: true,
-    message: 'Logout successful',
+    message: "Logout successful",
   });
 };
 

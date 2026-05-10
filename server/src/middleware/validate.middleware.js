@@ -8,9 +8,9 @@ const validate = (schema) => {
     if (error) {
       return res.status(400).json({
         success: false,
-        message: 'Validation failed',
+        message: "Validation failed",
         errors: error.details.map((detail) => ({
-          field: detail.path.join('.'),
+          field: detail.path.join("."),
           message: detail.message,
         })),
       });

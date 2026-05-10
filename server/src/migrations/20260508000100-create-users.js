@@ -1,4 +1,4 @@
-'use strict';
+"use strict";
 
 module.exports = {
   async up(queryInterface, Sequelize) {
@@ -8,13 +8,13 @@ module.exports = {
       });
 
       await queryInterface.createTable(
-        'users',
+        "users",
         {
           id: {
             type: Sequelize.UUID,
             allowNull: false,
             primaryKey: true,
-            defaultValue: Sequelize.literal('gen_random_uuid()'),
+            defaultValue: Sequelize.literal("gen_random_uuid()"),
           },
           name: {
             type: Sequelize.STRING(120),
@@ -29,9 +29,9 @@ module.exports = {
             allowNull: false,
           },
           type: {
-            type: Sequelize.ENUM('ADMIN', 'EMPLOYEE'),
+            type: Sequelize.ENUM("ADMIN", "EMPLOYEE"),
             allowNull: false,
-            defaultValue: 'EMPLOYEE',
+            defaultValue: "EMPLOYEE",
           },
           active: {
             type: Sequelize.BOOLEAN,
@@ -41,20 +41,20 @@ module.exports = {
           created_at: {
             type: Sequelize.DATE,
             allowNull: false,
-            defaultValue: Sequelize.fn('NOW'),
+            defaultValue: Sequelize.fn("NOW"),
           },
           updated_at: {
             type: Sequelize.DATE,
             allowNull: false,
-            defaultValue: Sequelize.fn('NOW'),
+            defaultValue: Sequelize.fn("NOW"),
           },
         },
-        { transaction }
+        { transaction },
       );
 
-      await queryInterface.addIndex('users', ['email_id'], {
+      await queryInterface.addIndex("users", ["email_id"], {
         unique: true,
-        name: 'users_email_id_unique',
+        name: "users_email_id_unique",
         transaction,
       });
     });
@@ -62,7 +62,7 @@ module.exports = {
 
   async down(queryInterface) {
     await queryInterface.sequelize.transaction(async (transaction) => {
-      await queryInterface.dropTable('users', { transaction });
+      await queryInterface.dropTable("users", { transaction });
       await queryInterface.sequelize.query('DROP TYPE IF EXISTS "enum_users_type";', {
         transaction,
       });

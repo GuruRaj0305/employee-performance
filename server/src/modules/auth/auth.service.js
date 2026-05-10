@@ -1,17 +1,16 @@
-const { User } = require('../../models/index.model');
-const { compare } = require('../../utils/passwd');
-const {
-  generateAccessToken,
-  generateRefreshToken,
-  verifyRefreshToken,
-} = require('../../utils/auth');
+const { User } = require("../../models/index.model");
+const { compare } = require("../../utils/passwd");
+const { generateAccessToken, generateRefreshToken, verifyRefreshToken } = require("../../utils/auth");
 
-const userAttributes = ['id', 'name', 'emailId', 'type', 'active', 'createdAt', 'updatedAt'];
+const userAttributes = ["id", "name", "emailId", "type", "active", "createdAt", "updatedAt"];
 
-const normalizeEmail = (email) => String(email || '').trim().toLowerCase();
+const normalizeEmail = (email) =>
+  String(email || "")
+    .trim()
+    .toLowerCase();
 
 const createTokenPayload = (user) => {
-  const plainUser = typeof user.get === 'function' ? user.get({ plain: true }) : user;
+  const plainUser = typeof user.get === "function" ? user.get({ plain: true }) : user;
 
   return {
     id: plainUser.id,
@@ -21,7 +20,7 @@ const createTokenPayload = (user) => {
 };
 
 const sanitizeUser = (user) => {
-  const plainUser = typeof user.get === 'function' ? user.get({ plain: true }) : user;
+  const plainUser = typeof user.get === "function" ? user.get({ plain: true }) : user;
 
   return {
     id: plainUser.id,
@@ -33,16 +32,12 @@ const sanitizeUser = (user) => {
 };
 
 const registerUser = async (data) => {
-  const {
-    name,
-    email,
-    password,
-  } = data;
+  const { name, email, password } = data;
   const normalizedEmail = normalizeEmail(email);
-  const type = 'EMPLOYEE';
+  const type = "EMPLOYEE";
 
   if (!name || !normalizedEmail || !password) {
-    const error = new Error('Name, email and password are required');
+    const error = new Error("Name, email and password are required");
     error.statusCode = 400;
     throw error;
   }
@@ -52,7 +47,7 @@ const registerUser = async (data) => {
   });
 
   if (existingUser) {
-    const error = new Error('Email already exists');
+    const error = new Error("Email already exists");
     error.statusCode = 409;
     throw error;
   }
@@ -76,7 +71,7 @@ const loginUser = async (data) => {
   const { email, password } = data;
 
   if (!email || !password) {
-    const error = new Error('Email and password are required');
+    const error = new Error("Email and password are required");
     error.statusCode = 400;
     throw error;
   }
@@ -85,7 +80,7 @@ const loginUser = async (data) => {
   const user = await User.findOne({ where: { emailId: normalizedEmail } });
 
   if (!user) {
-    const error = new Error('Invalid email or password');
+    const error = new Error("Invalid email or password");
     error.statusCode = 401;
     throw error;
   }
@@ -93,13 +88,13 @@ const loginUser = async (data) => {
   const isPasswordValid = await compare(password, user.password);
 
   if (!isPasswordValid) {
-    const error = new Error('Invalid email or password');
+    const error = new Error("Invalid email or password");
     error.statusCode = 401;
     throw error;
   }
 
   if (user.active === false) {
-    const error = new Error('User account is inactive');
+    const error = new Error("User account is inactive");
     error.statusCode = 403;
     throw error;
   }
@@ -121,7 +116,7 @@ const getProfile = async (userId) => {
   const user = await findUser(userId);
 
   if (!user) {
-    const error = new Error('User not found');
+    const error = new Error("User not found");
     error.statusCode = 404;
     throw error;
   }
@@ -131,7 +126,7 @@ const getProfile = async (userId) => {
 
 const refreshAccessToken = async (refreshToken) => {
   if (!refreshToken) {
-    const error = new Error('Refresh token is required');
+    const error = new Error("Refresh token is required");
     error.statusCode = 401;
     throw error;
   }
@@ -141,7 +136,7 @@ const refreshAccessToken = async (refreshToken) => {
   try {
     decoded = verifyRefreshToken(refreshToken);
   } catch (err) {
-    const error = new Error('Invalid or expired refresh token');
+    const error = new Error("Invalid or expired refresh token");
     error.statusCode = 401;
     throw error;
   }
@@ -149,13 +144,13 @@ const refreshAccessToken = async (refreshToken) => {
   const user = await findUser(decoded.id);
 
   if (!user) {
-    const error = new Error('User not found');
+    const error = new Error("User not found");
     error.statusCode = 404;
     throw error;
   }
 
   if (user.active === false) {
-    const error = new Error('User account is inactive');
+    const error = new Error("User account is inactive");
     error.statusCode = 403;
     throw error;
   }
@@ -175,7 +170,7 @@ const changePassword = async (userId, data) => {
   const { oldPassword, newPassword } = data;
 
   if (!oldPassword || !newPassword) {
-    const error = new Error('Old password and new password are required');
+    const error = new Error("Old password and new password are required");
     error.statusCode = 400;
     throw error;
   }
@@ -183,7 +178,7 @@ const changePassword = async (userId, data) => {
   const user = await User.findByPk(userId);
 
   if (!user) {
-    const error = new Error('User not found');
+    const error = new Error("User not found");
     error.statusCode = 404;
     throw error;
   }
@@ -191,7 +186,7 @@ const changePassword = async (userId, data) => {
   const isPasswordValid = await compare(oldPassword, user.password);
 
   if (!isPasswordValid) {
-    const error = new Error('Old password is incorrect');
+    const error = new Error("Old password is incorrect");
     error.statusCode = 401;
     throw error;
   }
@@ -201,7 +196,7 @@ const changePassword = async (userId, data) => {
   });
 
   return {
-    message: 'Password changed successfully',
+    message: "Password changed successfully",
   };
 };
 

@@ -1,15 +1,11 @@
-const express = require('express');
+const express = require("express");
 
-const authController = require('./auth.controller');
+const authController = require("./auth.controller");
 
-const validate = require('../../middleware/validate.middleware');
+const validate = require("../../middleware/validate.middleware");
 
-const { userAuthentication } = require('../../middleware/auth.middleware');
-const {
-  loginSchema,
-  changePasswordSchema,
-} = require('./auth.validation');
-
+const { userAuthentication } = require("../../middleware/auth.middleware");
+const { loginSchema, changePasswordSchema } = require("./auth.validation");
 
 const router = express.Router();
 
@@ -47,11 +43,7 @@ const router = express.Router();
  *       401:
  *         description: Invalid credentials.
  */
-router.post(
-    '/login',
-    validate(loginSchema),
-    authController.login
-);
+router.post("/login", validate(loginSchema), authController.login);
 
 /**
  * @swagger
@@ -85,12 +77,7 @@ router.post(
  *       401:
  *         description: Unauthorized.
  */
-router.patch(
-    '/change-password',
-    userAuthentication,
-    validate(changePasswordSchema),
-    authController.changePassword
-);
+router.patch("/change-password", userAuthentication, validate(changePasswordSchema), authController.changePassword);
 
 /**
  * @swagger
@@ -106,11 +93,7 @@ router.patch(
  *       401:
  *         description: Unauthorized.
  */
-router.get(
-    '/profile',
-    userAuthentication,
-    authController.profile
-);
+router.get("/profile", userAuthentication, authController.profile);
 
 /**
  * @swagger
@@ -124,10 +107,7 @@ router.get(
  *       401:
  *         description: Invalid or expired refresh token.
  */
-router.post(
-    '/refresh-token',
-    authController.refreshToken
-);
+router.post("/refresh-token", authController.refreshToken);
 
 /**
  * @swagger
@@ -143,10 +123,6 @@ router.post(
  *       401:
  *         description: Unauthorized.
  */
-router.post(
-    '/logout',
-    userAuthentication,
-    authController.logout
-);
+router.post("/logout", userAuthentication, authController.logout);
 
 module.exports = router;
