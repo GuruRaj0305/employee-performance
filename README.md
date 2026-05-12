@@ -16,7 +16,6 @@
    git clone https://github.com/GuruRaj0305/employee-performance.git
    ```
 
-2. create .env in both root directory and /server(here for migration purpose), and copy exammple.env to both.
 
 
 2. Navigate to the project directory
@@ -24,6 +23,8 @@
     ```bash
     cd employee-performance
     ```
+
+2. create .env in both root directory and /server(here for migration purpose), and copy exammple.env to both.
 
 
 3. Start the application using Docker Compose
@@ -75,7 +76,7 @@
 ### Deployed Application (Not production grade, deployed in aws spot instance with minimal setup and using docker compose)
 
 
-> url : `http://43.204.115.230`
+> url : `http://43.205.215.237`
 
 
 
